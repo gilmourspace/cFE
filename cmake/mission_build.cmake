@@ -461,19 +461,19 @@ function(process_arch TARGETSYSTEM)
   # to top-level build targets prefixed by the CPU architecture.
   add_custom_target(${TARGETSYSTEM}-all
    COMMAND
-      $(MAKE) all
+      ninja all
    WORKING_DIRECTORY
       "${ARCH_BINARY_DIR}"
   )
   add_custom_target(${TARGETSYSTEM}-clean
    COMMAND
-      $(MAKE) clean
+      ninja clean
    WORKING_DIRECTORY
       "${ARCH_BINARY_DIR}"
   )
   add_custom_target(${TARGETSYSTEM}-install
    COMMAND
-      $(MAKE) install
+      ninja install
    WORKING_DIRECTORY
       "${ARCH_BINARY_DIR}"
   )
