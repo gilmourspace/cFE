@@ -176,9 +176,9 @@ function(prepare)
 
   # Create custom targets for building and cleaning all architectures
   # This is required particularly for doing extra stuff in the clean step
-  add_custom_target(mission-all COMMAND $(MAKE) all)
-  add_custom_target(mission-install COMMAND $(MAKE) install)
-  add_custom_target(mission-clean COMMAND $(MAKE) clean)
+  add_custom_target(mission-all COMMAND ninja all)
+  add_custom_target(mission-install COMMAND ninja install)
+  add_custom_target(mission-clean COMMAND ninja clean)
   add_custom_target(mission-prebuild)
 
   # Locate the source location for all the apps found within the target file
@@ -441,7 +441,7 @@ function(process_arch TARGETSYSTEM)
   # Execute CMake subprocess to create a binary build tree for the specific CPU architecture
   execute_process(
     COMMAND ${CMAKE_COMMAND}
-        -G "Unix Makefiles"
+        -G Ninja
         -DTARGETSYSTEM=${TARGETSYSTEM}
         -DMISSION_BINARY_DIR=${MISSION_BINARY_DIR}
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
