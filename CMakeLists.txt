@@ -54,14 +54,14 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../psp/cmake/Modules" ${CMAKE
 # The minimum CMake version is chosen because v3.5.1 is what is
 # available by default with Ubuntu 16.04 LTS at the time of development
 # RHEL/CentOS users should install the "cmake3" package from EPEL repo
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15.3)
 
 # This top-level file does not define ANY targets directly but we know
 # that the subdirectories will at least use the "C" language, so
 # indicate that now.  Doing this early initializes the CFLAGS
 # so they won't change later.
 # Note: this line defines the CFE_SOURCE_DIR variable.
-project(CFE C)
+project(CFE C Swift)
 
 # Allow unit tests to be added by any recipe
 enable_testing()
@@ -85,6 +85,12 @@ endif (TARGETSYSTEM)
 # This is implemented differently depending on whether this is a
 # top-level or arch-specific build
 initialize_globals()
+
+set(CMAKE_Swift_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/swift)
+
+#set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Load the target configuration information (used by all builds)
 # This is at the top level so all vars set in here will become globals.
