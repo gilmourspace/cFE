@@ -10,7 +10,7 @@
 #
 ##################################################################
 
-project(CFETARGET C)
+project(CFETARGET C Swift)
 
 # Sanity check on inputs - these should be set in the parent script(s)
 if (NOT DEFINED TGTNAME)
@@ -140,12 +140,12 @@ target_include_directories(core-${TGTNAME} PRIVATE
 # linker in order to make sure the linker includes certain symbols in the link.
 # This problem may exist for the entry point or other symbols if the
 # linker doesn't know that they are unresolved when it links those files.
-set (TARGET_LINK_FLAGS)
+set (TARGET_LINK_FLAGS "-L/usr/lib/swift/linux")
 foreach(SYM ${CFE_ENTRY_SYM})
   set (TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -u ${SYM}")
 endforeach()
 
-set_target_properties(core-${TGTNAME} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}")
+set_target_properties(core-${TGTNAME} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}") 
 
 # We may need to use the "--whole-archive" flags to CFE, OSAL, and PSP to ensure that ALL
 # symbols make their way into the final executable.  The "--enable-exports"
@@ -256,7 +256,12 @@ if (DEFINED ${TGTNAME}_EMBED_FILELIST)
 
 endif (DEFINED ${TGTNAME}_EMBED_FILELIST)
 
+set(SWIFT_LIBS swiftCore util m swiftSwiftOnoneSupport icui18nswift icuucswift icudataswift stdc++ gcc_s)
+
 target_link_libraries(core-${TGTNAME}
+
+    ${SWIFT_LIBS}
+
     ${MISSION_CORE_INTERFACES}
 
     # The following libs should be included whole, even if they
