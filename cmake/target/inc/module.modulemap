@@ -1,0 +1,4 @@
+module target {
+    header "target-module.h"
+    export *
+}

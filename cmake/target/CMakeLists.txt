@@ -114,17 +114,21 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cfe_module_version_table.c
 )
 
 # Target for the final executable
-add_executable(core-${TGTNAME}
+add_library(lib-${TGTNAME} STATIC
     ${MISSION_BINARY_DIR}/src/cfe_mission_strings.c
-    ${CMAKE_CURRENT_BINARY_DIR}/cfe_module_version_table.c
-    ${CMAKE_CURRENT_BINARY_DIR}/cfe_build_env_table.c
-    ${CMAKE_CURRENT_BINARY_DIR}/cfe_psp_module_list.c
-    ${CMAKE_CURRENT_BINARY_DIR}/cfe_static_symbol_list.c
-    ${CMAKE_CURRENT_BINARY_DIR}/cfe_static_module_list.c
-    src/target_config.c
+#    ${CMAKE_CURRENT_BINARY_DIR}/cfe_module_version_table.c
+#    ${CMAKE_CURRENT_BINARY_DIR}/cfe_build_env_table.c
+#    ${CMAKE_CURRENT_BINARY_DIR}/cfe_psp_module_list.c
+#    ${CMAKE_CURRENT_BINARY_DIR}/cfe_static_symbol_list.c
+#    ${CMAKE_CURRENT_BINARY_DIR}/cfe_static_module_list.c
+#    src/target_config.c
 )
 
-target_compile_definitions(core-${TGTNAME} PRIVATE
+add_executable(core-${TGTNAME}
+    src/main.swift
+)
+
+target_compile_definitions(lib-${TGTNAME} PRIVATE
     CFE_DEFAULT_MODULE_EXTENSION="${CMAKE_SHARED_MODULE_SUFFIX}"
     CFE_DEFAULT_CORE_FILENAME="$<TARGET_FILE_NAME:core-${TGTNAME}>"
     CFE_CPU_NAME_VALUE="${TGTNAME}"
@@ -132,7 +136,7 @@ target_compile_definitions(core-${TGTNAME} PRIVATE
     CFE_CPU_ID_VALUE=${${TGTNAME}_PROCESSORID}
 )
 
-target_include_directories(core-${TGTNAME} PRIVATE
+target_include_directories(lib-${TGTNAME} PRIVATE
     "${CMAKE_BINARY_DIR}/${CFE_CORE_TARGET}/inc"
 )
 
@@ -145,7 +149,7 @@ foreach(SYM ${CFE_ENTRY_SYM})
   set (TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -u ${SYM}")
 endforeach()
 
-set_target_properties(core-${TGTNAME} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}") 
+set_target_properties(lib-${TGTNAME} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}") 
 
 # We may need to use the "--whole-archive" flags to CFE, OSAL, and PSP to ensure that ALL
 # symbols make their way into the final executable.  The "--enable-exports"
@@ -162,7 +166,7 @@ if (${TGTNAME}_APPLIST)
     set(STOP_WHOLE_ARCHIVE  "--no-whole-archive")
 
     # the linker option prefix may or may not be needed, see below
-    set(COMPILER_LINKER_OPTION_PREFIX "-Wl,")
+    set(COMPILER_LINKER_OPTION_PREFIX "-Xlinker ")
   else()
     # Other toolchain options may be added here
   endif()
@@ -174,11 +178,11 @@ if (${TGTNAME}_APPLIST)
   # but the platform should set CMAKE_EXE_EXPORTS_C_FLAG
   # for the ENABLE_EXPORTS property, so this just checks
   # if this starts with -Wl, and if so, use it here too.
-  if (DEFINED COMPILER_LINKER_OPTION_PREFIX AND
-        "${CMAKE_EXE_EXPORTS_C_FLAG}" MATCHES "^${COMPILER_LINKER_OPTION_PREFIX}")
+  #if (DEFINED COMPILER_LINKER_OPTION_PREFIX AND
+  #      "${CMAKE_EXE_EXPORTS_C_FLAG}" MATCHES "^${COMPILER_LINKER_OPTION_PREFIX}")
     set(START_WHOLE_ARCHIVE "${COMPILER_LINKER_OPTION_PREFIX}${START_WHOLE_ARCHIVE}")
     set(STOP_WHOLE_ARCHIVE "${COMPILER_LINKER_OPTION_PREFIX}${STOP_WHOLE_ARCHIVE}")
-  endif()
+  #endif()
 
 endif (${TGTNAME}_APPLIST)
 
@@ -258,22 +262,22 @@ endif (DEFINED ${TGTNAME}_EMBED_FILELIST)
 
 set(SWIFT_LIBS swiftCore util m swiftSwiftOnoneSupport icui18nswift icuucswift icudataswift stdc++ gcc_s)
 
-target_link_libraries(core-${TGTNAME}
+target_link_libraries(core-${TGTNAME} lib-${TGTNAME}
 
     ${SWIFT_LIBS}
 
     ${MISSION_CORE_INTERFACES}
+
+    # The remainder are static libraries that should only be
+    # included if they resolve an undefined symbol (normal link logic)
+    ${CFE_LINK_NORMAL_LIBS}
+    ${OSAL_LINK_LIBS}
 
     # The following libs should be included whole, even if they
     # do not necessarily resolve any symbols, because they may be needed by apps
     ${START_WHOLE_ARCHIVE}
     ${CFE_LINK_WHOLE_LIBS}
     ${STOP_WHOLE_ARCHIVE}
-
-    # The remainder are static libraries that should only be
-    # included if they resolve an undefined symbol (normal link logic)
-    ${CFE_LINK_NORMAL_LIBS}
-    ${OSAL_LINK_LIBS}
 )
 
 # Install the final executable
