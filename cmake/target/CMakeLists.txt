@@ -116,12 +116,12 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/cfe_module_version_table.c
 # Target for the final executable
 add_library(lib-${TGTNAME} STATIC
     ${MISSION_BINARY_DIR}/src/cfe_mission_strings.c
-#    ${CMAKE_CURRENT_BINARY_DIR}/cfe_module_version_table.c
-#    ${CMAKE_CURRENT_BINARY_DIR}/cfe_build_env_table.c
-#    ${CMAKE_CURRENT_BINARY_DIR}/cfe_psp_module_list.c
-#    ${CMAKE_CURRENT_BINARY_DIR}/cfe_static_symbol_list.c
-#    ${CMAKE_CURRENT_BINARY_DIR}/cfe_static_module_list.c
-#    src/target_config.c
+    ${CMAKE_CURRENT_BINARY_DIR}/cfe_module_version_table.c
+    ${CMAKE_CURRENT_BINARY_DIR}/cfe_build_env_table.c
+    ${CMAKE_CURRENT_BINARY_DIR}/cfe_psp_module_list.c
+    ${CMAKE_CURRENT_BINARY_DIR}/cfe_static_symbol_list.c
+    ${CMAKE_CURRENT_BINARY_DIR}/cfe_static_module_list.c
+    src/target_config.c
 )
 
 add_executable(core-${TGTNAME}
@@ -149,7 +149,7 @@ foreach(SYM ${CFE_ENTRY_SYM})
   set (TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -u ${SYM}")
 endforeach()
 
-set_target_properties(lib-${TGTNAME} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}") 
+set_target_properties(core-${TGTNAME} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}") 
 
 # We may need to use the "--whole-archive" flags to CFE, OSAL, and PSP to ensure that ALL
 # symbols make their way into the final executable.  The "--enable-exports"
@@ -158,6 +158,7 @@ set_target_properties(lib-${TGTNAME} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}
 # linking the entire CFE system into a single binary then no special help is needed.
 if (${TGTNAME}_APPLIST)
 
+  set_target_properties(lib-${TGTNAME} PROPERTIES ENABLE_EXPORTS TRUE)
   set_target_properties(core-${TGTNAME} PROPERTIES ENABLE_EXPORTS TRUE)
 
   if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
@@ -261,6 +262,22 @@ if (DEFINED ${TGTNAME}_EMBED_FILELIST)
 endif (DEFINED ${TGTNAME}_EMBED_FILELIST)
 
 set(SWIFT_LIBS swiftCore util m swiftSwiftOnoneSupport icui18nswift icuucswift icudataswift stdc++ gcc_s)
+
+target_link_libraries(lib-${TGTNAME}
+
+    ${SWIFT_LIBS}
+
+    ${MISSION_CORE_INTERFACES}
+
+    # The remainder are static libraries that should only be
+    # included if they resolve an undefined symbol (normal link logic)
+    ${CFE_LINK_NORMAL_LIBS}
+    ${OSAL_LINK_LIBS}
+
+    # The following libs should be included whole, even if they
+    # do not necessarily resolve any symbols, because they may be needed by apps
+)
+
 
 target_link_libraries(core-${TGTNAME} lib-${TGTNAME}
 
