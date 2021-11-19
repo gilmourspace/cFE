@@ -140,7 +140,16 @@ target_include_directories(core-${TGTNAME} PRIVATE
 # linker in order to make sure the linker includes certain symbols in the link.
 # This problem may exist for the entry point or other symbols if the
 # linker doesn't know that they are unresolved when it links those files.
-set (TARGET_LINK_FLAGS)
+set(SWIFT_LIBS swiftCore swiftSwiftOnoneSupport icui18nswift icuucswift icudataswift)
+set(SWIFT_SYSTEM_LIBS util m stdc++ gcc_s)
+set(SWIFT_ALL_LIBS ${SWIFT_LIBS} ${SWIFT_SYSTEM_LIBS})
+set(TARGET_LINK_FLAGS "-Xlinker --no-as-needed -Wl,-R/usr/lib/swift/linux -Wl,-L/usr/lib/swift/linux")
+
+foreach(SWIFTLIB ${SWIFT_LIBS})
+    add_library(${SWIFTLIB} SHARED IMPORTED)
+    set_target_properties(${SWIFTLIB} PROPERTIES IMPORTED_LOCATION "/usr/lib/swift/linux/lib${SWIFTLIB}.so")
+endforeach()
+
 foreach(SYM ${CFE_ENTRY_SYM})
   set (TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -u ${SYM}")
 endforeach()
@@ -256,9 +265,9 @@ if (DEFINED ${TGTNAME}_EMBED_FILELIST)
 
 endif (DEFINED ${TGTNAME}_EMBED_FILELIST)
 
-include("cmake/swift.cmake")
+#include("cmake/swift.cmake")
 
-add_swift_libraries()
+#add_swift_libraries()
 
 target_link_libraries(core-${TGTNAME}
 
