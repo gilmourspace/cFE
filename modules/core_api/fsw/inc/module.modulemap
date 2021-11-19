@@ -1,0 +1,4 @@
+module core_api {
+    header "cfe.h"
+    export *
+}
