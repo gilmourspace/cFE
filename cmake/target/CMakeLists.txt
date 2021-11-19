@@ -258,6 +258,8 @@ endif (DEFINED ${TGTNAME}_EMBED_FILELIST)
 
 include("cmake/swift.cmake")
 
+add_swift_libraries()
+
 target_link_libraries(core-${TGTNAME}
 
     ${SWIFT_ALL_LIBS}
