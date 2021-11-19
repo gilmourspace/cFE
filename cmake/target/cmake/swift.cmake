@@ -15,7 +15,7 @@ set(TARGET_LINK_FLAGS ${TARGET_LINK_FLAGS} "-Wl,-R/usr/lib/swift/linux" "-Wl,-L/
 
 foreach(SWIFTLIB ${SWIFT_LIBS})
     add_library(${SWIFTLIB} SHARED IMPORTED)
-    set_target_properties(${SWIFTLIB} PROPERTIES IMPORTED_LOCATION "/usr/lib/swift/linux/lib${SWIFTLIB}")
+    set_target_properties(${SWIFTLIB} PROPERTIES IMPORTED_LOCATION "/usr/lib/swift/linux/lib${SWIFTLIB}.so")
 endforeach()
 
 

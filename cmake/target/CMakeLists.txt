@@ -259,6 +259,9 @@ endif (DEFINED ${TGTNAME}_EMBED_FILELIST)
 include("cmake/swift.cmake")
 
 target_link_libraries(core-${TGTNAME}
+
+    ${SWIFT_ALL_LIBS}
+
     ${MISSION_CORE_INTERFACES}
 
     # The following libs should be included whole, even if they
