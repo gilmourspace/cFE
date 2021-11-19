@@ -256,6 +256,8 @@ if (DEFINED ${TGTNAME}_EMBED_FILELIST)
 
 endif (DEFINED ${TGTNAME}_EMBED_FILELIST)
 
+include("cmake/swift.cmake")
+
 target_link_libraries(core-${TGTNAME}
     ${MISSION_CORE_INTERFACES}
 
