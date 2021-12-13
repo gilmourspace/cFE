@@ -639,6 +639,7 @@ function(process_arch SYSVAR)
     endif()
   endforeach()
 
+
   # Add all core modules
   # The osal is handled explicitly (above) since this has special extra config
   foreach(DEP ${MISSION_CORE_INTERFACES} ${MISSION_CORE_MODULES})
@@ -674,16 +675,6 @@ function(process_arch SYSVAR)
     endforeach(APP ${${TGTNAME}_APPLIST})
 
   endforeach(TGTNAME ${TGTSYS_${SYSVAR}})
-
-  execute_process(
-    COMMAND ${CMAKE_COMMAND} -G Ninja -B build
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../SwiftCFS"
-    RESULT_VARIABLE SWIFTCFS_RESULT
-  )
-
-  if (NOT (SWIFTCFS_RESULT EQUAL 0))
-      message(FATAL_ERROR "Failed to configure SwiftCFS with error ${SWIFTCFS_RESULT}")
-  endif()
 
   foreach(APP ${TGTSYS_${SYSVAR}_STATICAPPS})
     set(APP_STATIC_TARGET_LIST ${TGTLIST_${APP}})
