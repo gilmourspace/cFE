@@ -144,16 +144,19 @@ set(SWIFT_LIBS swiftCore swiftSwiftOnoneSupport icui18nswift icuucswift icudatas
 set(SWIFT_SYSTEM_LIBS util m stdc++ gcc_s)
 set(SWIFT_ALL_LIBS ${SWIFT_LIBS} ${SWIFT_SYSTEM_LIBS})
 
-set(SWIFTENV_LOCATION "/usr/local/var/swiftenv")
+set(SWIFTENV_LOCATIONS "/usr/local/var/swiftenv" "$ENV{HOME}/.swiftenv")
 set(SWIFT_CANDIDATE_LIB_PATHS)
 
-if(EXISTS "${SWIFTENV_LOCATION}/version")
-    file(READ "${SWIFTENV_LOCATION}/version" SWIFTENV_SWIFT_VERSION)
-    if(SWIFTENV_SWIFT_VERSION)
-        string(REGEX REPLACE "[ \t\r\n]$" "" SWIFTENV_SWIFT_VERSION "${SWIFTENV_SWIFT_VERSION}")
-        set(SWIFT_CANDIDATE_LIB_PATHS "${SWIFTENV_LOCATION}/versions/${SWIFTENV_SWIFT_VERSION}/usr/lib/swift/linux")
+foreach (SWIFTENV_LOCATION ${SWIFTENV_LOCATIONS})
+    if(EXISTS "${SWIFTENV_LOCATION}/version")
+        file(READ "${SWIFTENV_LOCATION}/version" SWIFTENV_SWIFT_VERSION)
+        if(SWIFTENV_SWIFT_VERSION)
+            string(REGEX REPLACE "[ \t\r\n]$" "" SWIFTENV_SWIFT_VERSION "${SWIFTENV_SWIFT_VERSION}")
+            set(SWIFT_CANDIDATE_LIB_PATHS "${SWIFTENV_LOCATION}/versions/${SWIFTENV_SWIFT_VERSION}/usr/lib/swift/linux")
+            break()
+        endif()
     endif()
-endif()
+endforeach()
 
 set(SWIFT_CANDIDATE_LIB_PATHS ${SWIFT_CANDIDATE_LIB_PATHS} "/usr/lib/swift/linux" "/usr/local/lib/swift/linux" "/lib/swift/linux")
 
