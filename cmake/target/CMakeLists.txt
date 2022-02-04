@@ -182,6 +182,11 @@ foreach(SYM ${CFE_ENTRY_SYM})
   set (TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -u ${SYM}")
 endforeach()
 
+set(SWIFTCFS_LIB_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../../../SwiftCFS/.build/x86_64-unknown-linux-gnu/release")
+add_library(SwiftCFS SHARED IMPORTED)
+set_target_properties(SwiftCFS PROPERTIES IMPORTED_LOCATION "${SWIFTCFS_LIB_LOCATION}/libSwiftCFS.so")
+set(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -Xlinker --no-as-needed -Wl,-R${SWIFTCFS_LIB_LOCATION} -Wl,-L${SWIFTCFS_LIB_LOCATION}")
+
 set_target_properties(core-${TGTNAME} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}")
 
 # We may need to use the "--whole-archive" flags to CFE, OSAL, and PSP to ensure that ALL
@@ -300,6 +305,8 @@ endif (DEFINED ${TGTNAME}_EMBED_FILELIST)
 target_link_libraries(core-${TGTNAME}
 
     ${SWIFT_ALL_LIBS}
+
+    SwiftCFS
 
     ${MISSION_CORE_INTERFACES}
 
