@@ -182,7 +182,7 @@ foreach(SYM ${CFE_ENTRY_SYM})
   set (TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -u ${SYM}")
 endforeach()
 
-set(SWIFTCFS_LIB_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../../../SwiftCFS/.build/x86_64-unknown-linux-gnu/release")
+set(SWIFTCFS_LIB_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../../../SwiftCFS/.build/x86_64-unknown-linux-gnu/${CMAKE_BUILD_TYPE}")
 add_library(SwiftCFS SHARED IMPORTED)
 set_target_properties(SwiftCFS PROPERTIES IMPORTED_LOCATION "${SWIFTCFS_LIB_LOCATION}/libSwiftCFS.so")
 set(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -Xlinker --no-as-needed -Wl,-R${SWIFTCFS_LIB_LOCATION} -Wl,-L${SWIFTCFS_LIB_LOCATION}")
