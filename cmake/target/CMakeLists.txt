@@ -140,11 +140,11 @@ target_include_directories(core-${TGTNAME} PRIVATE
 # linker in order to make sure the linker includes certain symbols in the link.
 # This problem may exist for the entry point or other symbols if the
 # linker doesn't know that they are unresolved when it links those files.
-set(SWIFT_LIBS swiftCore swiftSwiftOnoneSupport icui18nswift icuucswift icudataswift)
+set(SWIFT_LIBS swiftCore SwiftOnoneSupport icui18n icuuc icudata)
 set(SWIFT_SYSTEM_LIBS util m stdc++ gcc_s)
 set(SWIFT_ALL_LIBS ${SWIFT_LIBS} ${SWIFT_SYSTEM_LIBS})
 
-set(SWIFTENV_LOCATIONS "/usr/local/var/swiftenv" "$ENV{HOME}/.swiftenv")
+set(SWIFTENV_LOCATIONS "${CMAKE_FIND_ROOT_PATH}/usr/local/var/swiftenv" "${CMAKE_FIND_ROOT_PATH}$ENV{HOME}/.swiftenv")
 set(SWIFT_CANDIDATE_LIB_PATHS)
 
 foreach (SWIFTENV_LOCATION ${SWIFTENV_LOCATIONS})
@@ -158,21 +158,44 @@ foreach (SWIFTENV_LOCATION ${SWIFTENV_LOCATIONS})
     endif()
 endforeach()
 
-set(SWIFT_CANDIDATE_LIB_PATHS ${SWIFT_CANDIDATE_LIB_PATHS} "/usr/lib/swift/linux" "/usr/local/lib/swift/linux" "/lib/swift/linux")
+set(SWIFT_CANDIDATE_LIB_PATHS ${SWIFT_CANDIDATE_LIB_PATHS}
+    "${CMAKE_FIND_ROOT_PATH}/usr/lib/swift/linux"
+    "${CMAKE_FIND_ROOT_PATH}/usr/local/lib/swift/linux"
+    "${CMAKE_FIND_ROOT_PATH}/lib/swift/linux"
+    "${CMAKE_FIND_ROOT_PATH}/usr/lib"
+    "${CMAKE_FIND_ROOT_PATH}/lib"
+)
 
 foreach(SWIFT_CANDIDATE_LIB_PATH ${SWIFT_CANDIDATE_LIB_PATHS})
     if(EXISTS ${SWIFT_CANDIDATE_LIB_PATH})
-        set(SWIFT_LIB_PATH ${SWIFT_CANDIDATE_LIB_PATH})
-        break()
+        set(SWIFT_LIB_PATHS ${SWIFT_LIB_PATHS} ${SWIFT_CANDIDATE_LIB_PATH})
     endif()
 endforeach()
 
-if(DEFINED SWIFT_LIB_PATH)
-    message(STATUS "Found Swift libraries in ${SWIFT_LIB_PATH}")
-    set(TARGET_LINK_FLAGS "-Xlinker --no-as-needed -Wl,-R${SWIFT_LIB_PATH} -Wl,-L${SWIFT_LIB_PATH}")
+set(SWIFT_FOUND_LIBRARIES)
+if(DEFINED SWIFT_LIB_PATHS)
     foreach(SWIFTLIB ${SWIFT_LIBS})
-        add_library(${SWIFTLIB} SHARED IMPORTED)
-        set_target_properties(${SWIFTLIB} PROPERTIES IMPORTED_LOCATION "${SWIFT_LIB_PATH}/lib${SWIFTLIB}.so")
+        foreach(SWIFT_LIB_PATH ${SWIFT_LIB_PATHS})
+            set(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -Xlinker --no-as-needed -Wl,-R${SWIFT_LIB_PATH} -Wl,-L${SWIFT_LIB_PATH}")
+            if (EXISTS "${SWIFT_LIB_PATH}/lib${SWIFTLIB}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+                add_library(${SWIFTLIB} SHARED IMPORTED)
+                set_target_properties(${SWIFTLIB} PROPERTIES IMPORTED_LOCATION "${SWIFT_LIB_PATH}/lib${SWIFTLIB}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+                set(SWIFT_FOUND_LIBRARIES ${SWIFT_FOUND_LIBRARIES} ${SWIFTLIB})
+                break()
+            endif()
+            if (EXISTS "${SWIFT_LIB_PATH}/libswift${SWIFTLIB}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+                add_library(${SWIFTLIB} SHARED IMPORTED)
+                set_target_properties(${SWIFTLIB} PROPERTIES IMPORTED_LOCATION "${SWIFT_LIB_PATH}/libswift${SWIFTLIB}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+                set(SWIFT_FOUND_LIBRARIES ${SWIFT_FOUND_LIBRARIES} ${SWIFTLIB})
+                break()
+            endif()
+            if (EXISTS "${SWIFT_LIB_PATH}/lib${SWIFTLIB}swift${CMAKE_SHARED_LIBRARY_SUFFIX}")
+                add_library(${SWIFTLIB} SHARED IMPORTED)
+                set_target_properties(${SWIFTLIB} PROPERTIES IMPORTED_LOCATION "${SWIFT_LIB_PATH}/lib${SWIFTLIB}swift${CMAKE_SHARED_LIBRARY_SUFFIX}")
+                set(SWIFT_FOUND_LIBRARIES ${SWIFT_FOUND_LIBRARIES} ${SWIFTLIB})
+                break()
+            endif()    
+        endforeach()
     endforeach()
 else()
     set(TARGET_LINK_FLAGS)
@@ -182,7 +205,11 @@ foreach(SYM ${CFE_ENTRY_SYM})
   set (TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -u ${SYM}")
 endforeach()
 
-set(SWIFTCFS_LIB_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../../../SwiftCFS/.build/x86_64-unknown-linux-gnu/${CMAKE_BUILD_TYPE}")
+if (NOT DEFINED TARGETPREFIX)
+    set(SWIFTCFS_LIB_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../../../SwiftCFS/.build/x86_64-unknown-linux-gnu/${CMAKE_BUILD_TYPE}")
+else()
+    set(SWIFTCFS_LIB_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/../../../SwiftCFS/.build/${TARGETPREFIX}/${CMAKE_BUILD_TYPE}")
+endif()
 add_library(SwiftCFS SHARED IMPORTED)
 set_target_properties(SwiftCFS PROPERTIES IMPORTED_LOCATION "${SWIFTCFS_LIB_LOCATION}/libSwiftCFS.so")
 set(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -Xlinker --no-as-needed -Wl,-R${SWIFTCFS_LIB_LOCATION} -Wl,-L${SWIFTCFS_LIB_LOCATION}")
