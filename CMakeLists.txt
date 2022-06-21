@@ -119,6 +119,8 @@ endif (IS_CFS_ARCH_BUILD)
 # top-level or arch-specific build
 prepare()
 
+message(STATUS "TGTSYS_LIST: ${TGTSYS_LIST}")
+
 # Call the process_arch macro for each architecture
 foreach(SYSVAR ${TGTSYS_LIST})
   process_arch(${SYSVAR})

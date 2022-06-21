@@ -97,14 +97,23 @@ function(add_cfe_app APP_NAME APP_SRC_FILES)
      set(APPTYPE "STATIC")
   endif()
 
+  message(STATUS "ARGN ${ARGN}")
+
+  message("CFE App CMAKE_LINKER: ${CMAKE_LINKER}")
+
   # Create the app module
   add_library(${APP_NAME} ${APPTYPE} ${APP_SRC_FILES} ${ARGN})
+  message(STATUS "Done add library")
   target_link_libraries(${APP_NAME} core_api)
+  string(REPLACE " " ";" LINK_OPTIONS ${CMAKE_SHARED_LINKER_FLAGS})
+  target_link_options(${APP_NAME} PUBLIC ${LINK_OPTIONS})
+  message(STATUS "Done link libraries")
 
   # An "install" step is only needed for dynamic/runtime loaded apps
   if (APP_DYNAMIC_TARGET_LIST)
     cfs_app_do_install(${APP_NAME} ${APP_DYNAMIC_TARGET_LIST})
   endif (APP_DYNAMIC_TARGET_LIST)
+  message(STATUS "Fin add_cfe_app")
 
 endfunction(add_cfe_app)
 
@@ -228,6 +237,30 @@ function(add_cfe_tables APP_NAME TBL_SRC_FILES)
                         -DCMAKE_AR=${CMAKE_AR}
                         -DTBLTOOL=${MISSION_BINARY_DIR}/tools/elf2cfetbl/elf2cfetbl
                         -DLIB=$<TARGET_FILE:${TABLE_LIBNAME}>
+                        -DCMAKE_SHARED_LINKER_FLAGS=""
+                        -DCMAKE_EXE_LINKER_FLAGS=""
+                        -DCMAKE_SYSTEM_NAME=""
+                        -DCMAKE_SYSTEM_PROCESSOR=""
+                        -DCMAKE_FIND_ROOT_PATH=""
+                        -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=""
+                        -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=""
+                        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=""
+                        -DCMAKE_SYSROOT=""
+                        -DCMAKE_STAGING_PREFIX=""
+                        -DCMAKE_C_FLAGS=""
+                        -DCMAKE_CXX_FLAGS=""
+                        -DCMAKE_C_COMPILER=""
+                        -DCMAKE_C_COMPILER_TARGET=""
+                        -DCMAKE_CXX_COMPILER=""
+                        -DCMAKE_PREFIX_PATH=""
+                        -DCMAKE_LINKER=""
+                        -DCMAKE_ASM_COMPILER=""
+                        -DCMAKE_STRIP=""
+                        -DCMAKE_NM=""
+                        -DCMAKE_AR=""
+                        -DCMAKE_OBJDUMP=""
+                        -DCMAKE_OBJCOPY=""
+                        -DCMAKE_CXX_COMPILER_TARGET=""
                         -P ${CFE_SOURCE_DIR}/cmake/generate_table.cmake
                     DEPENDS ${MISSION_BINARY_DIR}/tools/elf2cfetbl/elf2cfetbl ${TABLE_LIBNAME}
                     WORKING_DIRECTORY ${TABLE_DESTDIR}
@@ -574,11 +607,16 @@ function(process_arch SYSVAR)
   # Check if something actually uses this arch;
   # if this list is empty then do nothing, skip building osal/psp
   if (NOT DEFINED TGTSYS_${SYSVAR})
+    message(STATUS "Not defined!!!!")
     return()
   endif()
+  message(STATUS "DEFINED!!!")
+  message(STATUS "SysVar: ${SYSVAR}")
 
   # Generate a list of targets that share this system architecture
   set(INSTALL_TARGET_LIST ${TGTSYS_${SYSVAR}})
+
+  message(STATUS "Install target list: ${INSTALL_TARGET_LIST}")
 
   # Assume use of an OSAL BSP of the same name as the CFE PSP
   # This can be overridden by the PSP-specific build_options but normally this is expected.
@@ -664,6 +702,7 @@ function(process_arch SYSVAR)
   # Process each app that is used on this system architecture
   # First Pass: Assemble the list of apps that should be compiled
   foreach(APP ${TGTSYS_${SYSVAR}_APPS} ${TGTSYS_${SYSVAR}_STATICAPPS})
+    message(STATUS "App: ${APP}")
     set(TGTLIST_${APP})
   endforeach()
 
@@ -675,6 +714,12 @@ function(process_arch SYSVAR)
     endforeach(APP ${${TGTNAME}_APPLIST})
 
   endforeach(TGTNAME ${TGTSYS_${SYSVAR}})
+    
+  message(STATUS ${TGTSYS_${SYSVAR}_STATICAPPS})
+
+  set(CMAKE_RANLIB /usr/local/armv7-unknown-linux-gnueabihf/tools/bin/armv7-unknown-linux-gnueabihf-ranlib)
+  set(CMAKE_RANLIB:FILEPATH /usr/local/armv7-unknown-linux-gnueabihf/tools/bin/armv7-unknown-linux-gnueabihf-ranlib)
+  set(CMAKE_EXE_LINKER_FLAGS "bsdada")
 
   foreach(APP ${TGTSYS_${SYSVAR}_STATICAPPS})
     set(APP_STATIC_TARGET_LIST ${TGTLIST_${APP}})
@@ -684,10 +729,13 @@ function(process_arch SYSVAR)
   unset(APP_STATIC_TARGET_LIST)
 
   # Process each app that is used on this system architecture
+  message(STATUS ${TGTSYS_${SYSVAR}_APPS})
   foreach(APP ${TGTSYS_${SYSVAR}_APPS})
     set(APP_DYNAMIC_TARGET_LIST ${TGTLIST_${APP}})
     message(STATUS "Building Dynamic App: ${APP} targets=${APP_DYNAMIC_TARGET_LIST}")
+    message(STATUS "CMAKE_LINKER: ${CMAKE_LINKER}")
     add_subdirectory("${${APP}_MISSION_DIR}" apps/${APP})
+    message(STATUS "Added subdir for ${APP}")
   endforeach()
   unset(APP_DYNAMIC_TARGET_LIST)
 
