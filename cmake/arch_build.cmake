@@ -474,6 +474,9 @@ function(cfs_app_do_install APP_NAME)
     set_target_properties(${APP_NAME} PROPERTIES
         PREFIX "" OUTPUT_NAME "${APP_NAME}")
 
+    message(STATUS "cfs_app_do_install ARGN: ${ARGN}")
+    message(STATUS "cfs_app_do_install INSTALL_SUBDIR: ${INSTALL_SUBDIR}")
+
     # Create the install targets for this shared/modular app
     foreach(TGT ${ARGN})
       install(TARGETS ${APP_NAME} DESTINATION ${TGT}/${INSTALL_SUBDIR})
