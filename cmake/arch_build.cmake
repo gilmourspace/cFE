@@ -97,23 +97,18 @@ function(add_cfe_app APP_NAME APP_SRC_FILES)
      set(APPTYPE "STATIC")
   endif()
 
-  message(STATUS "ARGN ${ARGN}")
-
-  message("CFE App CMAKE_LINKER: ${CMAKE_LINKER}")
-
   # Create the app module
   add_library(${APP_NAME} ${APPTYPE} ${APP_SRC_FILES} ${ARGN})
-  message(STATUS "Done add library")
   target_link_libraries(${APP_NAME} core_api)
-  string(REPLACE " " ";" LINK_OPTIONS ${CMAKE_SHARED_LINKER_FLAGS})
+  if (CMAKE_SHARED_LINKER_FLAGS)
+    string(REPLACE " " ";" LINK_OPTIONS ${CMAKE_SHARED_LINKER_FLAGS})
+  endif()
   target_link_options(${APP_NAME} PUBLIC ${LINK_OPTIONS})
-  message(STATUS "Done link libraries")
 
   # An "install" step is only needed for dynamic/runtime loaded apps
   if (APP_DYNAMIC_TARGET_LIST)
     cfs_app_do_install(${APP_NAME} ${APP_DYNAMIC_TARGET_LIST})
   endif (APP_DYNAMIC_TARGET_LIST)
-  message(STATUS "Fin add_cfe_app")
 
 endfunction(add_cfe_app)
 
