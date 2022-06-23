@@ -100,6 +100,10 @@ function(add_cfe_app APP_NAME APP_SRC_FILES)
   # Create the app module
   add_library(${APP_NAME} ${APPTYPE} ${APP_SRC_FILES} ${ARGN})
   target_link_libraries(${APP_NAME} core_api)
+  if (CMAKE_SHARED_LINKER_FLAGS)
+    string(REPLACE " " ";" LINK_OPTIONS ${CMAKE_SHARED_LINKER_FLAGS})
+  endif()
+  target_link_options(${APP_NAME} PUBLIC ${LINK_OPTIONS})
 
   # An "install" step is only needed for dynamic/runtime loaded apps
   if (APP_DYNAMIC_TARGET_LIST)
@@ -465,6 +469,9 @@ function(cfs_app_do_install APP_NAME)
     set_target_properties(${APP_NAME} PROPERTIES
         PREFIX "" OUTPUT_NAME "${APP_NAME}")
 
+    message(STATUS "cfs_app_do_install ARGN: ${ARGN}")
+    message(STATUS "cfs_app_do_install INSTALL_SUBDIR: ${INSTALL_SUBDIR}")
+
     # Create the install targets for this shared/modular app
     foreach(TGT ${ARGN})
       install(TARGETS ${APP_NAME} DESTINATION ${TGT}/${INSTALL_SUBDIR})
@@ -664,6 +671,7 @@ function(process_arch SYSVAR)
   # Process each app that is used on this system architecture
   # First Pass: Assemble the list of apps that should be compiled
   foreach(APP ${TGTSYS_${SYSVAR}_APPS} ${TGTSYS_${SYSVAR}_STATICAPPS})
+    message(STATUS "App: ${APP}")
     set(TGTLIST_${APP})
   endforeach()
 
@@ -675,7 +683,7 @@ function(process_arch SYSVAR)
     endforeach(APP ${${TGTNAME}_APPLIST})
 
   endforeach(TGTNAME ${TGTSYS_${SYSVAR}})
-
+    
   foreach(APP ${TGTSYS_${SYSVAR}_STATICAPPS})
     set(APP_STATIC_TARGET_LIST ${TGTLIST_${APP}})
     message(STATUS "Building Static App: ${APP} targets=${APP_STATIC_TARGET_LIST}")
@@ -684,13 +692,14 @@ function(process_arch SYSVAR)
   unset(APP_STATIC_TARGET_LIST)
 
   # Process each app that is used on this system architecture
+  message(STATUS ${TGTSYS_${SYSVAR}_APPS})
   foreach(APP ${TGTSYS_${SYSVAR}_APPS})
     set(APP_DYNAMIC_TARGET_LIST ${TGTLIST_${APP}})
     message(STATUS "Building Dynamic App: ${APP} targets=${APP_DYNAMIC_TARGET_LIST}")
     add_subdirectory("${${APP}_MISSION_DIR}" apps/${APP})
   endforeach()
   unset(APP_DYNAMIC_TARGET_LIST)
-
+  
   # Process each target that shares this system architecture
   # Second Pass: Build and link final target executable
   foreach(TGTNAME ${TGTSYS_${SYSVAR}})
