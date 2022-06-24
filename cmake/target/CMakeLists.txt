@@ -213,7 +213,7 @@ endif()
 add_library(SwiftCFS SHARED IMPORTED)
 set_target_properties(SwiftCFS PROPERTIES IMPORTED_LOCATION "${SWIFTCFS_LIB_LOCATION}/libSwiftCFS.so")
 install(IMPORTED_RUNTIME_ARTIFACTS SwiftCFS DESTINATION ${TGTNAME}/${INSTALL_SUBDIR})
-set(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -Xlinker --no-as-needed -Wl,-R${SWIFTCFS_LIB_LOCATION} -Wl,-L${SWIFTCFS_LIB_LOCATION}")
+set(TARGET_LINK_FLAGS "${TARGET_LINK_FLAGS} -Xlinker --no-as-needed -Wl,-R/usr/lib/swift/linux -Wl,-L${SWIFTCFS_LIB_LOCATION} -Wl,-Rcf")
 
 set_target_properties(core-${TGTNAME} PROPERTIES LINK_FLAGS "${TARGET_LINK_FLAGS}")
 
@@ -334,7 +334,7 @@ target_link_libraries(core-${TGTNAME}
 
     ${SWIFT_ALL_LIBS}
 
-    SwiftCFS
+    libSwiftCFS.so
 
     ${MISSION_CORE_INTERFACES}
 
