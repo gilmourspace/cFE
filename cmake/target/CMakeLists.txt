@@ -334,7 +334,7 @@ target_link_libraries(core-${TGTNAME}
 
     ${SWIFT_ALL_LIBS}
 
-    libSwiftCFS.so
+    libSwiftCFS${CMAKE_SHARED_LIBRARY_SUFFIX}
 
     ${MISSION_CORE_INTERFACES}
 
