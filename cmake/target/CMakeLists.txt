@@ -147,16 +147,26 @@ set(SWIFT_ALL_LIBS ${SWIFT_LIBS} ${SWIFT_SYSTEM_LIBS})
 set(SWIFTENV_LOCATIONS "${CMAKE_FIND_ROOT_PATH}/usr/local/var/swiftenv" "${CMAKE_FIND_ROOT_PATH}$ENV{HOME}/.swiftenv")
 set(SWIFT_CANDIDATE_LIB_PATHS)
 
+message(NOTE ": Searching for swiftenv location in ${SWIFTENV_LOCATIONS}")
 foreach (SWIFTENV_LOCATION ${SWIFTENV_LOCATIONS})
     if(EXISTS "${SWIFTENV_LOCATION}/version")
         file(READ "${SWIFTENV_LOCATION}/version" SWIFTENV_SWIFT_VERSION)
+	message(NOTE ": Swiftenv version contents: ${SWIFTENV_SWIFT_VERSION}")
         if(SWIFTENV_SWIFT_VERSION)
             string(REGEX REPLACE "[ \t\r\n]$" "" SWIFTENV_SWIFT_VERSION "${SWIFTENV_SWIFT_VERSION}")
-            set(SWIFT_CANDIDATE_LIB_PATHS "${SWIFTENV_LOCATION}/versions/${SWIFTENV_SWIFT_VERSION}/usr/lib/swift/linux")
-            break()
+	    message(NOTE ": Swiftenv version after regex: ${SWIFTENV_SWIFT_VERSION}")
+	    if(EXISTS "${SWIFTENV_LOCATION}/versions/${SWIFTENV_SWIFT_VERSION}")
+                set(SWIFT_CANDIDATE_LIB_PATHS "${SWIFTENV_LOCATION}/versions/${SWIFTENV_SWIFT_VERSION}/usr/lib/swift/linux")
+		break()
+	    elseif(EXISTS "${SWIFTENV_LOCATION}/versions/swift-${SWIFTENV_SWIFT_VERSION}")
+                set(SWIFT_CANDIDATE_LIB_PATHS "${SWIFTENV_LOCATION}/versions/swift-${SWIFTENV_SWIFT_VERSION}/usr/lib/swift/linux")
+                break()
+	    endif()
         endif()
     endif()
 endforeach()
+
+message(NOTE ": Swiftenv location: ${SWIFT_CANDIDATE_LIB_PATHS}")
 
 set(SWIFT_CANDIDATE_LIB_PATHS ${SWIFT_CANDIDATE_LIB_PATHS}
     "${CMAKE_FIND_ROOT_PATH}/usr/lib/swift/linux"
